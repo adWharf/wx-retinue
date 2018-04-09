@@ -135,7 +135,8 @@ function getNowFormatDate() {
     return currentdate;
 }
 
-function campaign_action(action, cid) {
+function campaign_action(action, info) {
+    cid =info.cid
     var send_action = ''
     switch(action) {
         case 'STOP':
@@ -161,6 +162,11 @@ function campaign_action(action, cid) {
         type: 'POST',
         dataType: 'json',
         success: function (jsonRes) {
+            reportActionPerformRes(info.id, 1, JSON.stringify(jsonRes))
+            console.log(JSON.stringify(jsonRes));
+        },
+        error: function() {
+            reportActionPerformRes(info.id, -1, JSON.stringify(jsonRes))
             console.log(JSON.stringify(jsonRes));
         }
     });
@@ -171,11 +177,27 @@ function performAction(actions) {
         switch(action.action){
             case 'STOP':
                 console.log('Perform action STOP on ' + action.cname)
-                campaign_action('STOP', action.cid);
+                campaign_action('STOP', action);
                 break;
             default:
                 console.log('Unknow action', action)
                 break;
+        }
+    });
+}
+
+function reportActionPerformRes(id, status, res){
+    $.ajax({
+        url: config.api + '/actionResults',
+        data: {
+            'id': id,
+            'status': status,
+            'content': res
+        },
+        type: 'POST',
+        dataType: 'json',
+        success: function (jsonRes) {
+            console.log(JSON.stringify(jsonRes));
         }
     });
 }
