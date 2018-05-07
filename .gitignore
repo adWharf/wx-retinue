@@ -59,4 +59,4 @@ typings/
 .idea
 .DS_Store
 build
-config.js
+src/js/config.js
