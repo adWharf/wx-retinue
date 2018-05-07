@@ -13,19 +13,6 @@ import config from '../config';
 
 let host = 'https://mp.weixin.qq.com';
 
-function build(uri, query) {
-    query['token'] = getQuery('token');
-    query['_'] = (new Date()).valueOf();
-
-    if (! ('start_date' in query)) {
-        query['start_date'] = '2000-01-01';
-    }
-    if (! ('end_date' in query)) {
-        query['end_date'] = moment().format('YYYY-MM-DD');
-    }
-    return uri + '?' + qs.stringify(query);
-}
-
 export function getQuery(name) {
     let res = qs.parse(window.location.search);
     if (name in res.query) {
@@ -113,32 +100,39 @@ export function post(url, data) {
     )
 }
 
+function autoComQuery(query) {
+    if (! query) {
+        query = {};
+    }
+    query['token'] = getQuery('token');
+    query['_'] = (new Date()).valueOf();
+
+    if (! ('start_date' in query)) {
+        query['start_date'] = '2000-01-01';
+    }
+    if (! ('end_date' in query)) {
+        query['end_date'] = moment().format('YYYY-MM-DD');
+    }
+    if (! ('appid' in query)) {
+        query['appid'] = '';
+    }
+    if (! ('spid' in query)) {
+        query['spid'] = '';
+    }
+    return query;
+}
+
+
 // Interact with wx server
 export const wx = {
     get: (url, query) => {
         url = url.startsWith('/')? url: '/' + url;
-        query['token'] = getQuery('token');
-        query['_'] = (new Date()).valueOf();
-
-        if (! ('start_date' in query)) {
-            query['start_date'] = '2000-01-01';
-        }
-        if (! ('end_date' in query)) {
-            query['end_date'] = moment().format('YYYY-MM-DD');
-        }
+        query = autoComQuery(query);
         return get(host + url, query);
     },
     post: (url, data, query) => {
         url = url.startsWith('/')? url: '/' + url;
-        query['token'] = getQuery('token');
-        query['_'] = (new Date()).valueOf();
-
-        if (! ('start_date' in query)) {
-            query['start_date'] = '2000-01-01';
-        }
-        if (! ('end_date' in query)) {
-            query['end_date'] = moment().format('YYYY-MM-DD');
-        }
+        query = autoComQuery(query);
         return post(host + url + '?' + qs.stringify(query), data);
     }
 };
