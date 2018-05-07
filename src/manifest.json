@@ -21,7 +21,8 @@
     "webNavigation",
     "tabs",
     "contextMenus",
-    "webRequest"
+    "webRequest",
+    "http://localhost/*"
   ],
   "manifest_version": 2,
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
