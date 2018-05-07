@@ -7,8 +7,13 @@
  */
 import * as $ from 'jquery';
 
+let account = null;
+
 export function accountName() {
     try{
+        if (account != null) {
+            return account;
+        }
         let path = window.location.pathname;
         let name = '';
         if(path.indexOf('cgi-bin') >= 0) {
@@ -18,6 +23,7 @@ export function accountName() {
             name = $(div).children('div').text().split(' ')[0];
         }
         console.log('current account name:', name);
+        account = name;
         return name;
     } catch(e) {
         console.log(e);
