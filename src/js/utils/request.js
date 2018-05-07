@@ -5,7 +5,7 @@
  * @file: request.js
  * @time: 07/05/2018 14:59
  */
-
+import parser from 'query-string';
 import moment from 'moment';
 import qs from 'qs';
 import axios from 'axios';
@@ -14,9 +14,9 @@ import config from '../config';
 let host = 'https://mp.weixin.qq.com';
 
 export function getQuery(name) {
-    let res = qs.parse(window.location.search);
-    if (name in res.query) {
-        return res.query[name];
+    let res = parser.parse(window.location.search);
+    if (name in res) {
+        return res[name];
     }
     return null;
 }

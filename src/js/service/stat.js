@@ -15,8 +15,6 @@ export function adStat() {
         page_size: 1000,
         page: 1,
         action: 'get_camp_list',
-        appid: '',
-        spid: '',
     });
 }
 
@@ -25,7 +23,7 @@ export function reportAdStat(data) {
 
     // Make it compatible with old interface
     server.post('saveInputData', {
-        "data": JSON.stringify(json),
+        "data": JSON.stringify(data),
         "code": "all"
     });
 
