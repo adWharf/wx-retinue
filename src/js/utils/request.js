@@ -13,7 +13,7 @@ import config from '../config';
 
 let host = 'https://mp.weixin.qq.com';
 
-export function build(uri, query) {
+function build(uri, query) {
     query['token'] = getQuery('token');
     query['_'] = (new Date()).valueOf();
 
@@ -117,11 +117,29 @@ export function post(url, data) {
 export const wx = {
     get: (url, query) => {
         url = url.startsWith('/')? url: '/' + url;
+        query['token'] = getQuery('token');
+        query['_'] = (new Date()).valueOf();
+
+        if (! ('start_date' in query)) {
+            query['start_date'] = '2000-01-01';
+        }
+        if (! ('end_date' in query)) {
+            query['end_date'] = moment().format('YYYY-MM-DD');
+        }
         return get(host + url, query);
     },
-    post: (url, data) => {
+    post: (url, data, query) => {
         url = url.startsWith('/')? url: '/' + url;
-        return post(host + url, data);
+        query['token'] = getQuery('token');
+        query['_'] = (new Date()).valueOf();
+
+        if (! ('start_date' in query)) {
+            query['start_date'] = '2000-01-01';
+        }
+        if (! ('end_date' in query)) {
+            query['end_date'] = moment().format('YYYY-MM-DD');
+        }
+        return post(host + url + '?' + qs.stringify(query), data);
     }
 };
 

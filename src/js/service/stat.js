@@ -6,25 +6,30 @@
  * @time: 07/05/2018 16:55
  */
 
-import config from "../config";
-import axios from "axios";
-import { build } from '../utils/request';
+import { wx, server } from '../utils/request';
 import { accountName } from "../utils/page";
 
 
 export function adStat() {
-    return axios.get(build('promotion/snsdelivery/snsstat', {
+    return wx.get('promotion/snsdelivery/snsstat', {
         page_size: 1000,
         page: 1,
         action: 'get_camp_list',
         appid: '',
         spid: '',
-    }))
+    });
 }
 
 export function reportAdStat(data) {
     let name = accountName();
-    return axios.post(config.api + 'dataReporters', {
+
+    // Make it compatible with old interface
+    server.post('saveInputData', {
+        "data": JSON.stringify(json),
+        "code": "all"
+    });
+
+    return server.post('dataReporters', {
         'account': name,
         'code': 'all',
         'data': JSON.stringify(data),
