@@ -8,6 +8,7 @@
 
 import { wx, server } from '../utils/request';
 import { accountName } from "../utils/page";
+import config from '../config';
 
 
 export function adStat() {
@@ -20,6 +21,9 @@ export function adStat() {
 
 export function reportAdStat(data) {
     let name = accountName();
+    if (config.debug) {
+        return Promise.resolve('Debug mode');
+    }
 
     // Make it compatible with old interface
     server.post('saveInputData', {
