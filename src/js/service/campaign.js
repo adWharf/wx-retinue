@@ -5,7 +5,7 @@
  * @file: campaign.js
  * @time: 07/05/2018 21:46
  */
-import { wx } from '../utils/request';
+import {server, wx} from '../utils/request';
 import { deepMergeArr } from '../utils/helper'
 import * as $ from 'jquery';
 
@@ -509,6 +509,7 @@ export function update(cid, data) {
         // 同一计划pos_type相同
         campaign.pos_type = campaign.target_groups[0].ad_groups[0].ad_group.pos_type;
 
+        // TODO after update campaign, report it automatically
         return wx.post('promotion/v3/update_campaign_info', {
             args: JSON.stringify(campaign)
         });
@@ -639,6 +640,19 @@ export function checkBidType(ad_group) {
         return { bid: BID_TYPE_OCPM, opt: OPTIMIZE_MORE_ORDER };
     }
     return { bid: false, opt: false };
+}
+
+/**
+ * 发送最新Campaign信息到后台
+ * @param campaign
+ * @returns {*}
+ */
+export function reportCampaign(campaign) {
+    if (! campaign) {
+        return Promise.reject('Null campaign');
+    }
+    campaign['cid'] = campaign.campaign.cid;
+    return server.post('campaignInfo', campaign);
 }
 
 export default {
