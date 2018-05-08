@@ -9,6 +9,10 @@ import { wx } from '../utils/request';
 import { deepMergeArr } from '../utils/helper'
 import * as $ from 'jquery';
 
+export const BID_TYPE_CPM = 'cpm';
+export const BID_TYPE_OCPM = 'ocpm';
+export const OPTIMIZE_MORE_CLICK = 2;
+export const OPTIMIZE_MORE_ORDER = 7;
 
 /**
  *
@@ -592,6 +596,8 @@ export class UpdateCommander {
         return update(this.cid, this.obj);
     }
 }
+
+
 export function updateBid(cid, price) {
     return update(cid, );
 }
@@ -612,6 +618,27 @@ export function updateBid(cid, price) {
  */
 export function genTimeset(start, end) {
     return ('0'.repeat(start * 2) + '1'.repeat((end - start) * 2) + '0'.repeat((24 - end) * 2)).repeat(7);
+}
+
+/**
+ * 检查adGroup的出价类型以及优化目标
+ * @param ad_group
+ * @returns {*}
+ */
+export function checkBidType(ad_group) {
+    if (! ad_group) {
+        return { bid: false, opt: false };
+    }
+    if (! ('strategy_opt' in ad_group)) {
+        return { bid: BID_TYPE_CPM, opt: false };
+    }
+    let opt = JSON.parse(ad_group['strategy_opt']);
+    if (opt['bid_action_type'] == OPTIMIZE_MORE_CLICK) {
+        return { bid: BID_TYPE_OCPM, opt: OPTIMIZE_MORE_CLICK };
+    } else if (opt['bid_action_type'] == OPTIMIZE_MORE_ORDER) {
+        return { bid: BID_TYPE_OCPM, opt: OPTIMIZE_MORE_ORDER };
+    }
+    return { bid: false, opt: false };
 }
 
 export default {
