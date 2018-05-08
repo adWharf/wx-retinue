@@ -528,16 +528,90 @@ export function deleteTargetGroup(aid, pos_type) {
  * @param price
  * @returns {*}
  */
-export function updateBid(cid, price) {
-    return update(cid, {
-        target_groups: [{
-            ad_groups: [{
-                ad_group: {
-                    bid: price,
-                }
+export class UpdateCommander {
+
+    constructor(cid) {
+        this.cid = cid;
+        this.obj = {};
+    }
+
+    /**
+     *
+     * @param bid unit is cent
+     * @returns {UpdateCommander}
+     */
+    setBid(bid) {
+        this.obj = deepMergeArr(this.obj, {
+            target_groups: [{
+                ad_groups: [{
+                    ad_group: {
+                        bid,
+                    }
+                }]
             }]
-        }]
-    });
+        });
+        return this;
+    }
+
+    /**
+     * 设置投放区间
+     * @param start int [0-24]
+     * @param end int [0-24]
+     */
+    setTimeset(start, end) {
+        this.obj = deepMergeArr(this.obj, {
+            target_groups: [{
+                ad_groups: [{
+                    ad_group: {
+                        timeset: genTimeset(start, end),
+                    }
+                }]
+            }]
+        });
+        return this;
+    }
+
+    /**
+     * 每日预算
+     * @param budget
+     */
+    setBudget(budget) {
+        this.obj = deepMergeArr(this.obj, {
+            target_groups: [{
+                ad_groups: [{
+                    ad_group: {
+                        budget,
+                    }
+                }]
+            }]
+        });
+        return this;
+    }
+
+    execute() {
+        return update(this.cid, this.obj);
+    }
+}
+export function updateBid(cid, price) {
+    return update(cid, );
+}
+
+/**
+ * 生效时间周期
+ * @param start int
+ * @param end int
+ * Example: 1, 13
+ * Result:
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ * 001111111111111111111111110000000000000000000000
+ */
+export function genTimeset(start, end) {
+    return ('0'.repeat(start * 2) + '1'.repeat((end - start) * 2) + '0'.repeat((24 - end) * 2)).repeat(7);
 }
 
 export default {
