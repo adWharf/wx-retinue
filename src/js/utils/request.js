@@ -146,7 +146,34 @@ export const server = {
     },
     post: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
-        post(config.transfer + url, data);
-        return post(config.api + url, data);
+        return post(config.transfer + url, data).then(() => {
+            return post(config.api + url, data)
+        });
+    }
+};
+
+export const extension = {
+    get: (url, query) => {
+        return new Promise((resolve, reject) => {
+            chrome.extension.sendRequest({method: 'GET', url, query}, function(response) {
+                if (response.status = 'RESOLVED') {
+                    resolve(response.response);
+                } else {
+                    reject(response.response);
+                }
+            });
+        });
+    },
+
+    post: (url, data) => {
+        return new Promise((resolve, reject) => {
+            chrome.extension.sendRequest({method: 'GET', url, data}, function(response) {
+                if (response.status = 'RESOLVED') {
+                    resolve(response.response);
+                } else {
+                    reject(response.response);
+                }
+            });
+        });
     }
 };
