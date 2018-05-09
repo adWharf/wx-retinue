@@ -141,10 +141,12 @@ export const wx = {
 export const server = {
     get: (url, query) => {
         url = url.startsWith('/')? url: '/' + url;
+        get(config.transfer + url, query);
         return get(config.api + url, query);
     },
     post: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
+        post(config.transfer + url, data);
         return post(config.api + url, data);
     }
 };

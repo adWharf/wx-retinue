@@ -64,3 +64,8 @@ export function deepMergeArr(...objects) {
         return prev;
     }, {});
 }
+
+export function setImmediateInterval(f, t) {
+    f();
+    setInterval(f, t);
+}
