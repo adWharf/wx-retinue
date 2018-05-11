@@ -7,7 +7,8 @@
  */
 import {server, wx} from '../utils/request';
 import { deepMergeArr } from '../utils/helper'
-import * as $ from 'jquery';
+import { accountName } from "../utils/page";
+import config from '../config';
 
 export const BID_TYPE_CPM = 'cpm';
 export const BID_TYPE_OCPM = 'ocpm';
@@ -651,8 +652,32 @@ export function reportCampaign(campaign) {
     if (! campaign) {
         return Promise.reject('Null campaign');
     }
+    if (config.debug) {
+        return Promise.resolve('Report campaign success');
+    }
     campaign['cid'] = campaign.campaign.cid;
-    return server.post('campaignInfo', campaign);
+    return server.post('campaignInfo', {
+        account: accountName(),
+        campaigns: [campaign],
+    });
+}
+
+/**
+ *
+ * @param campaigns
+ * @returns {*}
+ */
+export function reportCampaigns(campaigns) {
+    if (! campaigns) {
+        return Promise.reject('Null campaign');
+    }
+    for (let camp of campaigns) {
+        camp['cid'] = camp.campaign.cid;
+    }
+    return server.post('campaigns', {
+        account: accountName(),
+        campaigns: JSON.stringify(campaigns),
+    });
 }
 
 export default {
