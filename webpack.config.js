@@ -6,6 +6,7 @@ var webpack = require("webpack"),
     CopyWebpackPlugin = require("copy-webpack-plugin"),
     HtmlWebpackPlugin = require("html-webpack-plugin"),
     WriteFilePlugin = require("write-file-webpack-plugin");
+    uglify = require('uglifyjs-webpack-plugin');
 
 // load the secrets
 var alias = {};
@@ -89,7 +90,9 @@ var options = {
 };
 
 if (env.NODE_ENV === "development") {
-    options.devtool = "cheap-module-eval-source-map";
+    //options.devtool = "cheap-module-eval-source-map";
+} else {
+    options.plugins.push(new uglify());
 }
 
 module.exports = options;
