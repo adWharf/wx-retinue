@@ -314,6 +314,91 @@ export function show(cid) {
 
 /**
  *
+ * @param data
+ * @returns {*}
+ *
+ * {
+ *	"pos_type": 999,
+ *	"product": {
+ *		"product_type": "PRODUCTTYPE_WECHAT_SHOP",
+ *		"product_id": "",
+ *		"product_info": ""
+ *	},
+ *	"campaign": {
+ *		"cid": 0,
+ *		"ctype": "CAMPAIGNTYPE_AUCTION",
+ *		"cname": "Test2",
+ *		"end_time": 1528905599,
+ *		"begin_time": 1527696000
+ *	},
+ *	"sub_product": {
+ *		"subordinate_product_id": "",
+ *		"product_type": "PRODUCTTYPE_WECHAT_SHOP",
+ *		"product_id": "",
+ *		"spname": ""
+ *	},
+ *	"target_groups": [{
+ *		"target_group": {
+ *			"mp_conf": "{\"version\":[],\"city_level\":3,\"show_area\":[\"130000\"],\"custom_poi\":[],\"time_type\":1,\"ocpm_type\":[\"450\",\"452\",\"666\",\"888\"],\"import_target_used\":false,\"dmp_type\":\"\"}"
+ *		},
+ *		"ad_groups": [{
+ *			"ad_group": {
+ *				"aid": 0,
+ *				"aname": "石家庄市等-女-14至60岁-投放20180531至0613",
+ *				"timeset": "111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000111111111111000000000000000000000000000000000000",
+ *				"product_id": "",
+ *				"product_type": "PRODUCTTYPE_WECHAT_SHOP",
+ *				"end_time": 1528905599,
+ *				"begin_time": 1527696000,
+ *				"strategy_opt": "{\"bid_objective\":2,\"bid_action_type\":2}",
+ *				"bid": 55,
+ *				"budget": 100000,
+ *				"contract_flag": 2,
+ *				"pos_type": 999,
+ *				"exposure_frequency": 6,
+ *				"poi": ""
+ *			},
+ *			"ad_target": {
+ *				"mid": 0,
+ *				"ad_behavior": "[{\"in_action_list\":[],\"not_in_action_list\":[]}]",
+ *				"education": "[]",
+ *				"device_price": "[]",
+ *				"area": "[\"130100\",\"130200\",\"130300\",\"130400\",\"130500\",\"130600\",\"130700\",\"130800\",\"130900\",\"131000\",\"131100\"]",
+ *				"travel_area": "[]",
+ *				"area_type": "area",
+ *				"gender": "[\"FEMALE\"]",
+ *				"age": "[\"14~60\"]",
+ *				"device_brand_model": "[]",
+ *				"businessinterest": "[]",
+ *				"app_behavior": "{}",
+ *				"os": "[]",
+ *				"marriage_status": "[]",
+ *				"wechatflowclass": "[]",
+ *				"connection": "[]",
+ *				"telcom": "[]",
+ *				"payment": "[]",
+ *				"custom_poi": "[]",
+ *				"weapp_version": "{\"min_ios_version\":0,\"min_android_version\":0}",
+ *				"in_dmp_audience": "[]",
+ *				"not_in_dmp_audience": "[]"
+ *			}
+ *		}]
+ *	}],
+ *	"expected_ret": 0,
+ *	"materials": [{
+ *		"tname": "创意-20180514",
+ *		"crt_size": 133
+ *	}]
+ *}
+ */
+export function create(data) {
+    return wx.post('promotion/v3/create_campaign_info', {
+        args: JSON.stringify(data)
+    });
+}
+
+/**
+ *
  * @param cid
  * @param data
  * @returns {*}
@@ -641,6 +726,30 @@ export function checkBidType(ad_group) {
         return { bid: BID_TYPE_OCPM, opt: OPTIMIZE_MORE_ORDER };
     }
     return { bid: false, opt: false };
+}
+
+/**
+ * 暂停计划
+ * @param cid
+ * @returns {*}
+ */
+export function suspendCampaign(cid) {
+    return wx.post('promotion/snsdelivery/sns_advert_mgr', {
+        action: 'suspend_campaign',
+        cid: cid
+    });
+}
+
+/**
+ * 重启计划
+ * @param cid
+ * @returns {*}
+ */
+export function resumeCampaign(cid) {
+    return wx.post('promotion/snsdelivery/sns_advert_mgr', {
+        action: 'resume_campaign',
+        cid: cid
+    });
 }
 
 /**
