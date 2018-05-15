@@ -223,7 +223,13 @@ export function adStat() {
                 action: 'get_camp_list',
             }).then(old_resp => {
                 for(let camp of old_resp.data.camp_list) {
-                    camp.sy_cost = map[camp.cid].campaign3_index?map[camp.cid].campaign3_index.paid:0;
+                    if (camp.cid in map && map[camp.cid.campaign3_index]) {
+                        camp.sy_cost = map[camp.cid].campaign3_index.paid;
+                    } else {
+                        camp.sy_cost = '0';
+                    }
+
+                    //camp.sy_cost = camp.sy_cost.toString();
                 }
                 resolve(old_resp);
             }, err => reject(err));
