@@ -70,10 +70,11 @@ export function chunk(arr, step, call) {
         return ;
     }
     let length = arr.length;
-    for (let i=0; i< length; i++) {
+    for (let i=0; i< length; i+=step) {
         call(arr.slice(i, i+step));
     }
 }
+
 
 export function setImmediateInterval(f, t) {
     f();

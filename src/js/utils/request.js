@@ -21,6 +21,7 @@ export function getQuery(name) {
     return null;
 }
 
+axios.defaults.retry = 3;
 
 axios.interceptors.request.use(config => {
     return config
@@ -31,7 +32,34 @@ axios.interceptors.request.use(config => {
 axios.interceptors.response.use(response => {
     return response
 }, error => {
-    return Promise.resolve(error.response)
+    let config = error.config;
+
+    // If config does not exist or the retry option is not set, reject
+    if(!config || !config.retry) return Promise.reject(error);
+
+    // Set the variable for keeping track of the retry count
+    config.__retryCount = config.__retryCount || 0;
+
+    // Check if we've maxed out the total number of retries
+    if(config.__retryCount >= config.retry) {
+        // Reject with the error
+        return Promise.reject(error);
+    }
+
+    // Increase the retry count
+    config.__retryCount += 1;
+
+    // Create new promise to handle exponential backoff
+    let backoff = new Promise(function(resolve) {
+        setTimeout(function() {
+            resolve();
+        }, config.retryDelay || 1);
+    });
+
+    // Return the promise in which recalls axios to retry the request
+    return backoff.then(function() {
+        return axios(config);
+    });
 });
 
 function checkStatus (response) {
@@ -142,12 +170,12 @@ export const server = {
     get: (url, query) => {
         url = url.startsWith('/')? url: '/' + url;
         get(config.transfer + url, query);
-        return get(config.api + url, query);
+        //return get(config.api + url, query);
     },
     post: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
         return post(config.transfer + url, data).then(() => {
-            return post(config.api + url, data)
+            //return post(config.api + url, data)
         });
     }
 };
