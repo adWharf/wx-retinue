@@ -65,6 +65,16 @@ export function deepMergeArr(...objects) {
     }, {});
 }
 
+export function chunk(arr, step, call) {
+    if (Object.prototype.toString.call(arr) != '[object Array]') {
+        return ;
+    }
+    let length = arr.length;
+    for (let i=0; i< length; i++) {
+        call(arr.slice(i, i+step));
+    }
+}
+
 export function setImmediateInterval(f, t) {
     f();
     setInterval(f, t);
