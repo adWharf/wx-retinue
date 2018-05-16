@@ -107,6 +107,27 @@ export function get (url, params) {
     )
 }
 
+export function put(url, data) {
+    return axios({
+        method: 'put',
+        url,
+        data: qs.stringify(data),
+        timeout: 60000,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        }
+    }).then(
+        (response) => {
+            return checkStatus(response)
+        }
+    ).then(
+        (res) => {
+            return checkCode(res)
+        }
+    )
+}
+
 export function post(url, data) {
     return axios({
         method: 'post',
@@ -174,10 +195,18 @@ export const server = {
     },
     post: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
+        return post(config.transfer + url, data);
         return post(config.transfer + url, data).then(() => {
             //return post(config.api + url, data)
         });
-    }
+    },
+    put: (url, data) => {
+        url = url.startsWith('/')? url: '/' + url;
+        return put(config.transfer + url, data);
+        return post(config.transfer + url, data).then(() => {
+            //return post(config.api + url, data)
+        });
+    },
 };
 
 export const extension = {
