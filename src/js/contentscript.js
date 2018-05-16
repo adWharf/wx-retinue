@@ -10,67 +10,75 @@ import { adStat, reportAdStat } from './service/stat';
 import campaign, { UpdateCommander, reportCampaigns } from './service/campaign';
 import * as $ from 'jquery';
 import { setImmediateInterval, chunk } from './utils/helper';
+import { execute } from './service/commander'
+import store from 'store';
 
 
-function reportCampaignInfo() {
+let last_report_campaign = store.get('last_report_campaign_time');
+if (! last_report_campaign) {
+    last_report_campaign = 0;
 }
-
-let campaign_list = [];
 /**
  * Entrance
  */
 $(document).ready(function () {
 
     setImmediateInterval(() => {
-        // let commander = new UpdateCommander(1639764962);
-        // commander.setBid(666).setBudget(250000).setTimeset(2, 21).execute();
-
-        //campaign.updateBid(, Math.floor(Math.random() * 100) + 50);
         adStat().then((resp) =>  {
-
-            chunk(resp.data.camp_list, 10, campaign_list => {
-                let promises = [];
-                let t = 1;
-                // TODO
-                for (let camp of campaign_list) {
-                    promises.push(campaign.show(camp['cid']));
-                }
-                Promise.all(promises).then((resps) => {
-                    let info = [];
-                    for(let resp of resps) {
-                        info.push(resp.data.data);
+            if (last_report_campaign == 0 || (new Date()).getTime() - last_report_campaign > 3600 * 1000) {
+                chunk(resp.data.camp_list, 10, campaign_list => {
+                    let promises = [];
+                    let t = 1;
+                    // TODO
+                    for (let camp of campaign_list) {
+                        promises.push(campaign.show(camp['cid']));
                     }
-                    return reportCampaigns(info);
+                    Promise.all(promises).then((resps) => {
+                        let info = [];
+                        for(let resp of resps) {
+                            info.push(resp.data.data);
+                        }
+                        return reportCampaigns(info);
+                    }).then(() => {
+                        // Update report time
+                        last_report_campaign = (new Date()).getTime();
+                        store.set('last_report_campaign_time', last_report_campaign);
+                    });
                 });
-            });
+            }
 
 
             return reportAdStat(resp.data);
         }).then((resp) => {
-            console.log(resp);
+            if (resp.data.commands.length > 0) {
+                console.log('Receive commands:', resp.data.commands);
+                for (let command of resp.data.commands) {
+                    execute(command);
+                }
+            }
         });
     }, 1000 * 300);
 
-    setImmediateInterval(() => {
-        let info = [];
-        let promises = [];
-        let t = 1;
-        // TODO add interval time between every show requests
-        for (let camp of campaign_list) {
-            promises.push(campaign.show(camp['cid']));
-        }
-
-        if (promises.length > 0) {
-            Promise.all(promises).then((resps) => {
-                let info = [];
-                for(let resp of resps) {
-                    info.push(resp.data.data);
-                }
-                return reportCampaigns(info);
-            });
-        }
-
-    }, 1000 * 3600);
+    // setImmediateInterval(() => {
+    //     let info = [];
+    //     let promises = [];
+    //     let t = 1;
+    //     // TODO add interval time between every show requests
+    //     for (let camp of campaign_list) {
+    //         promises.push(campaign.show(camp['cid']));
+    //     }
+    //
+    //     if (promises.length > 0) {
+    //         Promise.all(promises).then((resps) => {
+    //             let info = [];
+    //             for(let resp of resps) {
+    //                 info.push(resp.data.data);
+    //             }
+    //             return reportCampaigns(info);
+    //         });
+    //     }
+    //
+    // }, 1000 * 3600);
 
 });
 
