@@ -525,7 +525,7 @@ export function create(data) {
  *
  */
 export function update(cid, data) {
-    show(cid).then(resp => {
+    return show(cid).then(resp => {
         let info = resp.data.data;
         let campaign = {
             pos_type: null,
