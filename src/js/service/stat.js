@@ -9,7 +9,9 @@
 import { wx, server, extension } from '../utils/request';
 import { accountName } from "../utils/page";
 import config from '../config';
-import moment from 'moment';
+import store from 'store';
+
+let CACHE_KEY_AD_NUM = 'ad_nums';
 
 
 /**
@@ -185,11 +187,13 @@ import moment from 'moment';
  *}
  */
 export function adStat() {
-    let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
-    let t_e = t_s + 86400;
     return new Promise((resolve, reject) => {
+        let ad_nums = store.get(CACHE_KEY_AD_NUM);
+        if (! ad_nums) {
+            ad_nums = 2000;
+        }
         let promises = [];
-        for (let i=1; i< 1000 / 50; i++) {
+        for (let i=1; i< Math.ceil(ad_nums / 50) + 1; i++) {
             promises.push(
                 wx.get('promotion/as_rock', {
                     action: 'get_campaign_data',
@@ -200,10 +204,7 @@ export function adStat() {
                         "page_size": 1000,
                         "pos_type": 999,
                         "query_index": "[\"material_preview\",\"pos_type\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"comindex\",\"cpa\",\"clk_pv\",\"ctr\",\"exposure_score\",\"order_roi\",\"begin_time\",\"end_time\"]",
-                        "time_range": {
-                            "start_time": t_s,
-                            "last_time": t_e
-                        }
+                        "time_range": time_range(),
                     }),
                 }));
         }
@@ -218,29 +219,79 @@ export function adStat() {
                 }
             }
             wx.get('promotion/snsdelivery/snsstat', {
-                page_size: 1000,
+                page_size: ad_nums,
                 page: 1,
                 action: 'get_camp_list',
             }).then(old_resp => {
+                store.set(CACHE_KEY_AD_NUM, old_resp.data.camp_list.length + 1);
                 for(let camp of old_resp.data.camp_list) {
                     if (camp.cid in map && 'paid' in map[camp.cid].campaign3_index) {
                         camp.sy_cost = map[camp.cid].campaign3_index.paid;
                     } else {
                         camp.sy_cost = '0';
                     }
-
-                    //camp.sy_cost = camp.sy_cost.toString();
                 }
                 resolve(old_resp);
             }, err => reject(err));
         }, err => reject(err));
     });
+}
 
-    return wx.get('promotion/snsdelivery/snsstat', {
-        page_size: 1000,
-        page: 1,
-        action: 'get_camp_list',
+/**
+ * 获取公众号广告实时状态
+ * @returns {Promise<any>}
+ */
+export function officialAccountAdStat() {
+    return new Promise((resolve, reject) => {
+        let promises = [];
+        for (let i=1; i< 1000 / 50; i++) {
+            promises.push(
+                wx.get('promotion/as_rock', {
+                    action: 'get_campaign_data',
+                    args: JSON.stringify({
+                        "op_type": 1,
+                        "where": {},
+                        "page": 1,
+                        "page_size": 20,
+                        "pos_type": 998,
+                        "query_index": "[\"material_preview\",\"ctr\",\"comindex\",\"cpa\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"clk_pv\",\"cvr\",\"order_roi\",\"begin_time\",\"end_time\"]",
+                        "time_range": time_range(),
+                    }),
+                }));
+        }
+        Promise.all(promises).then(resps => {
+            resolve(resps);
+        }, err => reject(err));
     });
+}
+
+/**
+ * 过滤部分状态广告
+ * @param camp_list
+ * @param status
+ * @returns {Array}
+ */
+export function excludeStatus(camp_list, status) {
+    let res = [];
+    let filter = {};
+    for (let s of status) {
+        filter[s] = true;
+    }
+    for (let camp of camp_list) {
+        if (! (camp.real_status in filter)) {
+            res.push(camp);
+        }
+    }
+    return res;
+}
+
+function time_range() {
+    let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
+    let t_e = t_s + 86400;
+    return {
+        start_time: t_s,
+        last_time: t_e,
+    };
 }
 
 /**
