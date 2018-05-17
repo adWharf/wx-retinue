@@ -189,62 +189,65 @@ let CACHE_KEY_AD_NUM = 'ad_nums';
  *}
  */
 export function adStat() {
-    return new Promise((resolve, reject) => {
-        let ad_nums = store.get(CACHE_KEY_AD_NUM);
-        if (! ad_nums) {
-            ad_nums = 2000;
-        }
-        let promises = [];
-        for (let i=1; i< Math.ceil(ad_nums / 50) + 1; i++) {
-            promises.push(
-                wx.get('promotion/as_rock', {
-                    action: 'get_campaign_data',
-                    args: JSON.stringify({
-                        "op_type": 1,
-                        "where": {},
-                        "page": i,
-                        "page_size": 50,
-                        "pos_type": 999,
-                        "query_index": "[\"material_preview\",\"pos_type\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"comindex\",\"cpa\",\"clk_pv\",\"ctr\",\"exposure_score\",\"order_roi\",\"begin_time\",\"end_time\"]",
-                        "time_range": time_range(-31, 0),
-                    }),
-                    start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
-                }));
-        }
-        Promise.all(promises).then(resps => {
-            let map = {};
-            for (let resp of resps) {
-                if (! resp.data.list) {
-                    break;
-                }
-                for(let camp of resp.data.list) {
-                    map[camp.campaign_info.cid] = camp;
-                }
-            }
-            wx.get('promotion/snsdelivery/snsstat', {
-                page_size: ad_nums,
-                page: 1,
-                action: 'get_camp_list',
-                start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
-            }).then(old_resp => {
-                store.set(CACHE_KEY_AD_NUM, old_resp.data.camp_list.length + 1);
-                old_resp.data.camp_list = excludeStatus(old_resp.data.camp_list,
-                    [ADSTATUS.FINISH, ADSTATUS.CREATING, ADSTATUS.DENIED]);
-                for(let camp of old_resp.data.camp_list) {
-                    if (camp.cid in map && 'paid' in map[camp.cid].campaign3_index) {
-                        camp.sy_cost = map[camp.cid].campaign3_index.paid;
-                    } else {
-                        if (camp.real_status != '暂停投放') {
-                            console.log(camp);
-                        }
-
-                        camp.sy_cost = '0';
-                    }
-                }
-                resolve(old_resp);
-            }, err => reject(err));
-        }, err => reject(err));
-    });
+    // return new Promise((resolve, reject) => {
+    //     let ad_nums = store.get(CACHE_KEY_AD_NUM);
+    //     if (! ad_nums) {
+    //         ad_nums = 2000;
+    //     }
+    //     let promises = [];
+    //     for (let i=1; i< Math.ceil(ad_nums / 50) + 1; i++) {
+    //         promises.push(
+    //             wx.get('promotion/as_rock', {
+    //                 action: 'get_campaign_data',
+    //                 args: JSON.stringify({
+    //                     "op_type": 1,
+    //                     "where": {},
+    //                     "page": i,
+    //                     "page_size": 50,
+    //                     "pos_type": 999,
+    //                     "query_index": "[\"material_preview\",\"pos_type\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"comindex\",\"cpa\",\"clk_pv\",\"ctr\",\"exposure_score\",\"order_roi\",\"begin_time\",\"end_time\"]",
+    //                     "time_range": time_range(0, 0),
+    //                 }),
+    //                 start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
+    //             }));
+    //     }
+    //     Promise.all(promises).then(resps => {
+    //         let map = {};
+    //         for (let resp of resps) {
+    //             if (! resp.data.list) {
+    //                 break;
+    //             }
+    //             for(let camp of resp.data.list) {
+    //                 map[camp.campaign_info.cid] = camp;
+    //             }
+    //         }
+    //         wx.get('promotion/snsdelivery/snsstat', {
+    //             page_size: ad_nums,
+    //             page: 1,
+    //             action: 'get_camp_list',
+    //             start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
+    //         }).then(old_resp => {
+    //             store.set(CACHE_KEY_AD_NUM, old_resp.data.camp_list.length + 1);
+    //             // old_resp.data.camp_list = excludeStatus(old_resp.data.camp_list,
+    //             //     [ADSTATUS.FINISH, ADSTATUS.CREATING, ADSTATUS.DENIED]);
+    //             for(let camp of old_resp.data.camp_list) {
+    //                 if (camp.cid in map && 'paid' in map[camp.cid].campaign3_index) {
+    //                     camp.sy_cost = map[camp.cid].campaign3_index.paid;
+    //                 } else {
+    //                     camp.sy_cost = '0';
+    //                 }
+    //             }
+    //             resolve(old_resp);
+    //         }, err => reject(err));
+    //     }, err => reject(err));
+    // });
+    return wx.get('promotion/snsdelivery/snsstat', {
+        page_size: 2000,
+        page: 1,
+        action: 'get_camp_list',
+        level: 2,
+        start_date: moment().format('YYYY-MM-DD'),
+    })
 }
 
 /**
@@ -296,13 +299,13 @@ export function excludeStatus(camp_list, status) {
 }
 
 function time_range(start, end) {
-    // let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
-    // let t_e = t_s + 86400;
+    let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
+    let t_e = t_s + 86400;
     let start_date = start<0?moment().subtract(Math.abs(start), 'days'): moment().add(Math.abs(start), 'days');
     let end_date = end<0?moment().subtract(Math.abs(end), 'days'): moment().add(Math.abs(end), 'days');
     return {
-        start_time: start_date.unix(),
-        last_time: end_date.unix(),
+        start_time: t_s,
+        last_time: t_e,
     };
 }
 
