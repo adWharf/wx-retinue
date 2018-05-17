@@ -223,7 +223,7 @@ export function adStat() {
                 action: 'get_camp_list',
             }).then(old_resp => {
                 for(let camp of old_resp.data.camp_list) {
-                    if (camp.cid in map && map[camp.cid.campaign3_index]) {
+                    if (camp.cid in map && 'paid' in map[camp.cid].campaign3_index) {
                         camp.sy_cost = map[camp.cid].campaign3_index.paid;
                     } else {
                         camp.sy_cost = '0';
