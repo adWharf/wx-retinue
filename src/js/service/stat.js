@@ -10,6 +10,7 @@ import { wx, server, extension } from '../utils/request';
 import { accountName } from "../utils/page";
 import config from '../config';
 import store from 'store';
+import moment from 'moment';
 
 let CACHE_KEY_AD_NUM = 'ad_nums';
 
@@ -201,11 +202,12 @@ export function adStat() {
                         "op_type": 1,
                         "where": {},
                         "page": i,
-                        "page_size": 1000,
+                        "page_size": 50,
                         "pos_type": 999,
                         "query_index": "[\"material_preview\",\"pos_type\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"comindex\",\"cpa\",\"clk_pv\",\"ctr\",\"exposure_score\",\"order_roi\",\"begin_time\",\"end_time\"]",
                         "time_range": time_range(),
                     }),
+                    start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
                 }));
         }
         Promise.all(promises).then(resps => {
@@ -222,6 +224,7 @@ export function adStat() {
                 page_size: ad_nums,
                 page: 1,
                 action: 'get_camp_list',
+                start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
             }).then(old_resp => {
                 store.set(CACHE_KEY_AD_NUM, old_resp.data.camp_list.length + 1);
                 for(let camp of old_resp.data.camp_list) {
