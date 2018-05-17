@@ -11,6 +11,7 @@ import { accountName } from "../utils/page";
 import config from '../config';
 import store from 'store';
 import moment from 'moment';
+import { ADSTATUS } from "../utils/constants";
 
 let CACHE_KEY_AD_NUM = 'ad_nums';
 
@@ -205,7 +206,7 @@ export function adStat() {
                         "page_size": 50,
                         "pos_type": 999,
                         "query_index": "[\"material_preview\",\"pos_type\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"comindex\",\"cpa\",\"clk_pv\",\"ctr\",\"exposure_score\",\"order_roi\",\"begin_time\",\"end_time\"]",
-                        "time_range": time_range(),
+                        "time_range": time_range(-31, 0),
                     }),
                     start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
                 }));
@@ -227,10 +228,16 @@ export function adStat() {
                 start_date: moment().subtract(31, 'days').format('YYYY-MM-DD'),
             }).then(old_resp => {
                 store.set(CACHE_KEY_AD_NUM, old_resp.data.camp_list.length + 1);
+                old_resp.data.camp_list = excludeStatus(old_resp.data.camp_list,
+                    [ADSTATUS.FINISH, ADSTATUS.CREATING, ADSTATUS.DENIED]);
                 for(let camp of old_resp.data.camp_list) {
                     if (camp.cid in map && 'paid' in map[camp.cid].campaign3_index) {
                         camp.sy_cost = map[camp.cid].campaign3_index.paid;
                     } else {
+                        if (camp.real_status != '暂停投放') {
+                            console.log(camp);
+                        }
+
                         camp.sy_cost = '0';
                     }
                 }
@@ -258,7 +265,7 @@ export function officialAccountAdStat() {
                         "page_size": 20,
                         "pos_type": 998,
                         "query_index": "[\"material_preview\",\"ctr\",\"comindex\",\"cpa\",\"status\",\"budget\",\"paid\",\"exp_pv\",\"clk_pv\",\"cvr\",\"order_roi\",\"begin_time\",\"end_time\"]",
-                        "time_range": time_range(),
+                        "time_range": time_range(-31, 0),
                     }),
                 }));
         }
@@ -288,12 +295,14 @@ export function excludeStatus(camp_list, status) {
     return res;
 }
 
-function time_range() {
-    let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
-    let t_e = t_s + 86400;
+function time_range(start, end) {
+    // let t_s = Math.floor((new Date()).getTime() / 1000 / 86400) * 86400;
+    // let t_e = t_s + 86400;
+    let start_date = start<0?moment().subtract(Math.abs(start), 'days'): moment().add(Math.abs(start), 'days');
+    let end_date = end<0?moment().subtract(Math.abs(end), 'days'): moment().add(Math.abs(end), 'days');
     return {
-        start_time: t_s,
-        last_time: t_e,
+        start_time: start_date.unix(),
+        last_time: end_date.unix(),
     };
 }
 

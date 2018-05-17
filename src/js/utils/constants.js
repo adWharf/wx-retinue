@@ -9,4 +9,6 @@
 export const ADSTATUS = {
     NORMAL: '投放中',
     FINISH: '投放结束',
+    DENIED: '未通过',
+    CREATING: '创建中',
 };
