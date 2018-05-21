@@ -190,21 +190,36 @@ export const wx = {
 export const server = {
     get: (url, query) => {
         url = url.startsWith('/')? url: '/' + url;
-        get(config.transfer + url, query);
+        //get(config.transfer + url, query);
+        return get(config.transfer + url, query).then((resp) => {
+            return Promise.resolve(resp);
+        }, err =>{
+            return Promise.reject(err);
+        }).finally(() => {
+            get(config.api + url, query)
+        });
         //return get(config.api + url, query);
     },
     post: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
-        return post(config.transfer + url, data);
-        return post(config.transfer + url, data).then(() => {
-            //return post(config.api + url, data)
+        //return post(config.transfer + url, data);
+        return post(config.transfer + url, data).then((resp) => {
+            return Promise.resolve(resp);
+        }, err =>{
+            return Promise.reject(err);
+        }).finally(() => {
+            post(config.api + url, data)
         });
     },
     put: (url, data) => {
         url = url.startsWith('/')? url: '/' + url;
-        return put(config.transfer + url, data);
-        return post(config.transfer + url, data).then(() => {
-            //return post(config.api + url, data)
+        //return put(config.transfer + url, data);
+        return put(config.transfer + url, data).then((resp) => {
+            return Promise.resolve(resp);
+        }, err =>{
+            return Promise.reject(err);
+        }).finally(() => {
+            put(config.api + url, data)
         });
     },
 };
